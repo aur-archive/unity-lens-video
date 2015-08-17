@@ -1,0 +1,53 @@
+# Maintainer: Charles Bos <charlesbos1 AT gmail>
+# Contributor: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+
+pkgname=unity-lens-video
+_actual_ver=0.3.15
+_extra_ver=+13.10.20130920
+_source_date=20130920
+_translations=20130418
+pkgver=${_actual_ver}.${_source_date}
+pkgrel=2
+pkgdesc="Unity Video lens"
+arch=('i686' 'x86_64')
+url="https://launchpad.net/unity-lens-videos"
+license=('GPL')
+depends=('dee' 'json-glib' 'libgee06' 'libsoup-gnome' 'libunity' 'libzeitgeist' 'unity-lens-music')
+makedepends=('gnome-common' 'intltool' 'vala')
+provides=("unity-scope-video-remote=${pkgver}")
+conflicts=('unity-scope-video-remote')
+replaces=('unity-scope-video-remote')
+groups=('unity')
+source=("https://launchpad.net/ubuntu/+archive/primary/+files/unity-lens-video_${_actual_ver}${_extra_ver}.orig.tar.gz"
+        "https://dl.dropboxusercontent.com/u/486665/Translations/translations-${_translations}-unity-lens-video.tar.gz")
+sha512sums=('8afe4c92d3c85345c9a6e448227b775305afd9605af7ad147a43bec3485334a1b15c4b2ee0620230d25866bf6712d2fc5507cf2a6e90818fa896dca1295913b8'
+            'cac380942dd525e405dcac5c348e0aac8c734cb5ee2d2ef034a1a4a0acbeb54dc5598dc40ab7e4b0fcbe28eec322663b15a1df09fc36aec091c1f959ec67b700')
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${_actual_ver}${_extra_ver}"
+
+  msg "Merging translations from ${_translations}"
+  rm -f po/LINGUAS po/*.pot
+  mv "${srcdir}"/po/*.pot po/
+  for i in "${srcdir}"/po/*.po; do
+    FILE=$(sed -n "s|.*/${pkgname}-||p" <<< ${i})
+    mv ${i} po/${FILE}
+    echo ${FILE%.*} >> po/LINGUAS
+  done
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${_actual_ver}${_extra_ver}"
+
+  autoreconf -vfi
+  intltoolize -f
+  ./configure --prefix=/usr --libexecdir=/usr/lib --enable-headless-tests
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${_actual_ver}${_extra_ver}"
+  make DESTDIR="${pkgdir}/" install
+}
+
+# vim:set ts=2 sw=2 et:
